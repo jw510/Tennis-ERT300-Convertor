@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tennis String Tension Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 480px;
+      margin: auto;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .output {
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Tennis String Tension Converter</h2>
+
+  <label for="headSize">Racket Head Size (sq. in.):</label>
+  <select id="headSize">
+    <option value="106-115">106-115</option>
+    <option value="95-105">95-105</option>
+    <option value="83-94">83-94</option>
+  </select>
+
+  <label for="dtValue">DT Value:</label>
+  <select id="dtValue"></select>
+
+  <div class="output">
+    <p><strong>Tension (kg):</strong> <span id="kgOutput">-</span></p>
+    <p><strong>Tension (lbs):</strong> <span id="lbsOutput">-</span></p>
+  </div>
+
+  <script>
+    const data = {
+      "106-115": {
+        26: [19, 42], 27: [20, 44], 28: [20.5, 45], 29: [21, 46],
+        30: [22, 48], 31: [23, 51], 32: [23.5, 52], 33: [24, 53]
+      },
+      "95-105": {
+        26: [17, 37], 27: [18, 40], 28: [18.5, 41], 29: [19, 42],
+        30: [20, 44], 31: [21, 46], 32: [21.5, 47], 33: [22, 48]
+      },
+      "83-94": {
+        26: [15, 33], 27: [16, 35], 28: [16.5, 36], 29: [17, 37],
+        30: [18, 40], 31: [19, 42], 32: [19.5, 43], 33: [20, 44]
+      }
+    };
+
+    const dtSelect = document.getElementById('dtValue');
+    const headSelect = document.getElementById('headSize');
+    const kgOutput = document.getElementById('kgOutput');
+    const lbsOutput = document.getElementById('lbsOutput');
+
+    function updateDTOptions() {
+      const headSize = headSelect.value;
+      dtSelect.innerHTML = '';
+      Object.keys(data[headSize]).forEach(dt => {
+        const option = document.createElement('option');
+        option.value = dt;
+        option.textContent = dt;
+        dtSelect.appendChild(option);
+      });
+      updateOutput();
+    }
+
+    function updateOutput() {
+      const headSize = headSelect.value;
+      const dt = dtSelect.value;
+      if (dt && data[headSize][dt]) {
+        const [kg, lbs] = data[headSize][dt];
+        kgOutput.textContent = kg;
+        lbsOutput.textContent = lbs;
+      } else {
+        kgOutput.textContent = '-';
+        lbsOutput.textContent = '-';
+      }
+    }
+
+    headSelect.addEventListener('change', updateDTOptions);
+    dtSelect.addEventListener('change', updateOutput);
+
+    // Initialize
+    updateDTOptions();
+  </script>
+</body>
+</html>
