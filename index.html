@@ -92,22 +92,33 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const body = document.body;
-    const toggle = document.getElementById('darkModeToggle');
-    const prefersDark = localStorage.getItem('theme') === 'dark';
-    if (prefersDark) {
+  const body = document.body;
+  const toggleTheme = document.createElement('div');
+  toggleTheme.innerHTML = `
+    <div class="d-flex justify-content-end mb-2">
+  <label for="darkModeToggle" class="form-check-label me-2">🌙 Dark Mode</label>
+  <div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+  </div>
+</div>`;
+  document.querySelector('.container').prepend(toggleTheme);
+
+  const toggle = document.getElementById('darkModeToggle');
+  const prefersDark = localStorage.getItem('theme') === 'dark';
+  if (prefersDark) {
+    body.classList.add('bg-dark', 'text-light');
+    toggle.checked = true;
+  }
+  toggle.addEventListener('change', () => {
+    if (toggle.checked) {
       body.classList.add('bg-dark', 'text-light');
-      toggle.checked = true;
+      localStorage.setItem('theme', 'dark');
+    } else {
+      body.classList.remove('bg-dark', 'text-light');
+      localStorage.setItem('theme', 'light');
     }
-    toggle.addEventListener('change', () => {
-      if (toggle.checked) {
-        body.classList.add('bg-dark', 'text-light');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        body.classList.remove('bg-dark', 'text-light');
-        localStorage.setItem('theme', 'light');
-      }
-    });
-  </script>
+  });
+</script>
+
 </body>
 </html>
