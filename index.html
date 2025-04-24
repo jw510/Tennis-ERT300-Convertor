@@ -354,5 +354,27 @@ saveMemoryCombo(owner, racket, string);
       });
     });
   </script>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('darkModeToggle');
+  const prefersDark = localStorage.getItem('theme') === 'dark';
+  if (prefersDark) {
+    document.body.classList.add('bg-dark', 'text-light');
+    toggle.checked = true;
+  }
+
+  toggle.addEventListener('change', () => {
+    if (toggle.checked) {
+      document.body.classList.add('bg-dark', 'text-light');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('bg-dark', 'text-light');
+      localStorage.setItem('theme', 'light');
+    }
+  });
+});
+</script>
+
 </body>
 </html>
