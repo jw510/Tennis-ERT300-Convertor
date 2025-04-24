@@ -10,52 +10,55 @@
     .tab-content > div { padding-top: 20px; }
     .output { font-size: 1.2em; margin-top: 20px; }
     #converter select, #converter input { margin-bottom: 15px; }
-    .history-entry { font-size: 0.95em; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .history-entry span { flex-grow: 1; }
-    .delete-btn { margin-left: 10px; }
+    .history-entry { font-size: 0.95em; margin-bottom: 8px; }
+    .history-card { background-color: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+    .bg-dark .history-card { background-color: #2c2f33; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="d-flex justify-content-end mb-2">
+      <label for="darkModeToggle" class="form-check-label me-2">🌙 Dark Mode</label>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="darkModeToggle">
+      </div>
+    </div>
+
     <h2 class="text-center mb-4">ERT300 DT/Tension Converter</h2>
 
     <ul class="nav nav-tabs" id="myTab" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="how-tab" data-bs-toggle="tab" data-bs-target="#how" type="button" role="tab">📘 How to Use</button>
+      <li class="nav-item">
+        <button class="nav-link active" id="how-tab" data-bs-toggle="tab" data-bs-target="#how" type="button">📘 How to Use</button>
       </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="what-tab" data-bs-toggle="tab" data-bs-target="#what" type="button" role="tab">📏 What is DT</button>
+      <li class="nav-item">
+        <button class="nav-link" id="what-tab" data-bs-toggle="tab" data-bs-target="#what" type="button">📏 What is DT</button>
       </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="convert-tab" data-bs-toggle="tab" data-bs-target="#converter" type="button" role="tab">🧮 Converter</button>
+      <li class="nav-item">
+        <button class="nav-link" id="convert-tab" data-bs-toggle="tab" data-bs-target="#converter" type="button">🧮 Converter</button>
       </li>
     </ul>
 
-    <div class="tab-content" id="myTabContent">
-      <div class="tab-pane fade show active" id="how" role="tabpanel">
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="how">
         <p><strong>1.</strong> Clip the ERT300 in the center of the string bed (jump the widest cross string).</p>
         <p><strong>2.</strong> Hold the racket at the throat or grip, and keep it steady during measurement.</p>
         <p><strong>3.</strong> Press the ON button. A simulated ball impact starts (gentle vibrations).</p>
         <p><strong>4.</strong> Read the DT value after 6–8 seconds. The device will shut off automatically.</p>
-        <p class="mt-3 text-danger"><strong>Note:</strong> If the ERROR message appears, reposition the device and try again. Hold from the grip instead of throat if needed.</p>
+        <p class="text-danger"><strong>Note:</strong> If ERROR appears, reposition and try again. Hold from grip if needed.</p>
       </div>
 
-      <div class="tab-pane fade" id="what" role="tabpanel">
-        <p>DT (Dynamic Tension) is the stiffness of the string bed measured by the ERT300 through an electronic simulation of ball impact.</p>
+      <div class="tab-pane fade" id="what">
+        <p>DT (Dynamic Tension) is the stiffness of the string bed. Higher DT = more control, lower DT = more power.</p>
         <ul>
-          <li>Higher DT = More control</li>
-          <li>Lower DT = More power</li>
+          <li>DT 28–34: Defensive</li>
+          <li>DT 35–41: Dynamic</li>
+          <li>DT 42–46: Aggressive</li>
+          <li>DT 47–54: Very Aggressive</li>
         </ul>
-        <p><strong>DT Value Ranges:</strong></p>
-        <ul>
-          <li>DT 28–34: Defensive Play</li>
-          <li>DT 35–41: Dynamic/Offensive Play</li>
-          <li>DT 42–46: Fast/Aggressive Play</li>
-          <li>DT 47–54: Very Fast/Extremely Aggressive</li>
-        </ul>
-        <p>DT is measured in kp/cm (or Newton/mm). It represents the force needed to deflect the string bed by 1 cm at the sweet spot.</p>
+        <p>DT = kp/cm (force needed to deflect 1 cm). Measured at sweet spot.</p>
       </div>
 
-      <div class="tab-pane fade" id="converter" role="tabpanel">
+      <div class="tab-pane fade" id="converter">
         <label for="headSize">Racket Head Size (sq. in.):</label>
         <select id="headSize" class="form-select">
           <option value="83-94">83-94</option>
@@ -64,20 +67,24 @@
         </select>
         <label for="dtInput">Enter DT Value:</label>
         <input type="number" id="dtInput" class="form-control" placeholder="Enter DT value (26-53)">
+        <label for="ownerName">Owner Name:</label>
+        <input type="text" id="ownerName" class="form-control" placeholder="e.g. Alex, Jason">
         <label for="racketName">Racket Name:</label>
-        <input type="text" id="racketName" class="form-control" placeholder="e.g. Wilson Blade 98">
+        <input type="text" id="racketName" class="form-control" placeholder="e.g. Blade 98">
         <label for="stringType">String Type:</label>
-        <input type="text" id="stringType" class="form-control" placeholder="e.g. Luxilon ALU Power">
+        <input type="text" id="stringType" class="form-control" placeholder="e.g. ALU Power">
         <div id="errorMsg" class="text-danger mt-2"></div>
         <div class="output">
           <p><strong>Tension (lbs):</strong> <span id="lbsOutput">-</span></p>
           <p><strong>Tension (kg):</strong> <span id="kgOutput">-</span></p>
         </div>
         <button class="btn btn-primary mt-3" onclick="saveDT()">💾 Save to History</button>
-        <div class="mt-4">
+        
+        <div class="mt-3">
           <button class="btn btn-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#historyCollapse">📜 View DT History</button>
           <div class="collapse mt-3" id="historyCollapse">
-            <div id="historyContent" class="border rounded p-3"></div>
+            <input type="text" id="historyFilter" class="form-control mb-3" placeholder="Filter by Owner or Racket Name">
+<div id="historyContent" class="border rounded p-3"></div>
           </div>
         </div>
       </div>
@@ -86,33 +93,119 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-  const body = document.body;
-  const toggleTheme = document.createElement('div');
-  toggleTheme.innerHTML = `
-    <div class="d-flex justify-content-end mb-2">
-  <label for="darkModeToggle" class="form-check-label me-2">🌙 Dark Mode</label>
-  <div class="form-check form-switch">
-    <input class="form-check-input" type="checkbox" id="darkModeToggle">
-  </div>
-</div>`;
-  document.querySelector('.container').prepend(toggleTheme);
+    const headSelect = document.getElementById('headSize');
+    const dtInput = document.getElementById('dtInput');
+    const ownerInput = document.getElementById('ownerName');
+    const racketInput = document.getElementById('racketName');
+    const stringInput = document.getElementById('stringType');
+    const kgOutput = document.getElementById('kgOutput');
+    const lbsOutput = document.getElementById('lbsOutput');
+    const errorMsg = document.getElementById('errorMsg');
+    const historyContent = document.getElementById('historyContent');
+    const filterInput = document.getElementById('historyFilter');
 
-  const toggle = document.getElementById('darkModeToggle');
-  const prefersDark = localStorage.getItem('theme') === 'dark';
-  if (prefersDark) {
-    body.classList.add('bg-dark', 'text-light');
-    toggle.checked = true;
-  }
-  toggle.addEventListener('change', () => {
-    if (toggle.checked) {
-      body.classList.add('bg-dark', 'text-light');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      body.classList.remove('bg-dark', 'text-light');
-      localStorage.setItem('theme', 'light');
+    const data = {
+      "106-115": {"26":[19,42], "53":[37.5,81]},
+      "95-105": {"26":[17,37], "53":[35,77]},
+      "83-94": {"26":[15,33], "53":[33,74]}
+    };
+
+    function updateOutput() {
+      const headSize = headSelect.value;
+      const dt = parseInt(dtInput.value);
+      if (isNaN(dt) || dtInput.value.includes('.')) {
+        errorMsg.textContent = "Please enter a whole number.";
+        kgOutput.textContent = '-';
+        lbsOutput.textContent = '-';
+        return;
+      }
+      if (!data[headSize][dt]) {
+        errorMsg.textContent = "DT value out of range. Enter a whole number between 26 and 53.";
+        kgOutput.textContent = '-';
+        lbsOutput.textContent = '-';
+        return;
+      }
+      errorMsg.textContent = "";
+      const [kg, lbs] = data[headSize][dt];
+      kgOutput.textContent = kg;
+      lbsOutput.textContent = lbs;
     }
-  });
-</script>
 
+    function saveDT() {
+      const owner = ownerInput.value.trim();
+      const racket = racketInput.value.trim();
+      const string = stringInput.value.trim();
+      const dt = parseInt(dtInput.value);
+      const headSize = headSelect.value;
+      const now = new Date().toLocaleString();
+      if (!owner || !racket || !string || isNaN(dt)) {
+        alert("Please enter Owner, Racket, String and valid DT.");
+        return;
+      }
+      const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
+      const key = `${owner}::${racket}`;
+      if (!history[key]) history[key] = [];
+      history[key].unshift({ dt, string, owner, headSize, time: now });
+      localStorage.setItem('dtHistory', JSON.stringify(history));
+      displayHistory();
+    }
+
+    function deleteEntry(key, index) {
+      const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
+      if (history[key]) {
+        history[key].splice(index, 1);
+        if (history[key].length === 0) delete history[key];
+        localStorage.setItem('dtHistory', JSON.stringify(history));
+        displayHistory();
+      }
+    }
+
+    function displayHistory() {
+      const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
+      const filter = filterInput.value.toLowerCase();
+      historyContent.innerHTML = '';
+      for (const [key, entries] of Object.entries(history)) {
+        const [owner, racket] = key.split('::');
+        if (filter && !owner.toLowerCase().includes(filter) && !racket.toLowerCase().includes(filter)) continue;
+        const title = document.createElement('h6');
+        title.innerHTML = `🎾 <strong>${owner}</strong> – ${racket}`;
+        historyContent.appendChild(title);
+        entries.forEach((entry, index) => {
+          const div = document.createElement('div');
+          div.className = 'history-card';
+          const tension = data[entry.headSize]?.[entry.dt] || ["-", "-"];
+          div.innerHTML = `
+            <div><strong>DT:</strong> ${entry.dt}</div>
+            <div><strong>Tension:</strong> ${tension[1]} lbs / ${tension[0]} kg</div>
+            <div><strong>String:</strong> ${entry.string}</div>
+            <div><strong>Head Size:</strong> ${entry.headSize}</div>
+            <div><strong>Time:</strong> ${entry.time}</div>
+            <div class='mt-2'><button class='btn btn-sm btn-danger' onclick='deleteEntry("${key}", ${index})'>🗑 Delete</button></div>
+          `;
+          historyContent.appendChild(div);
+        });
+      }
+    }
+
+    headSelect.addEventListener('change', updateOutput);
+    dtInput.addEventListener('input', updateOutput);
+    filterInput.addEventListener('input', displayHistory);
+    window.addEventListener('DOMContentLoaded', () => {
+      updateOutput();
+      displayHistory();
+
+      const toggle = document.getElementById('darkModeToggle');
+      const prefersDark = localStorage.getItem('theme') === 'dark';
+      if (prefersDark) {
+        document.body.classList.add('bg-dark', 'text-light');
+        toggle.checked = true;
+      }
+      toggle.addEventListener('change', () => {
+        document.body.classList.toggle('bg-dark');
+        document.body.classList.toggle('text-light');
+        localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+      });
+    });
+  </script>
 </body>
 </html>
