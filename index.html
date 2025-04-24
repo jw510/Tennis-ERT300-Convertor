@@ -59,6 +59,11 @@
       </div>
 
       <div class="tab-pane fade" id="converter">
+<label for="memorySelect">🔁 Reuse Previous Entry:</label>
+<select id="memorySelect" class="form-select mb-3">
+  <option value="">Select saved combo</option>
+</select>
+
         <label for="headSize">Racket Head Size (sq. in.):</label>
         <select id="headSize" class="form-select">
           <option value="83-94">83-94</option>
@@ -79,6 +84,7 @@
           <p><strong>Tension (kg):</strong> <span id="kgOutput">-</span></p>
         </div>
         <button class="btn btn-primary mt-3" onclick="saveDT()">💾 Save to History</button>
+<div id="saveMsg" class="text-success mt-2" style="display:none;">✔️ History is saved!</div>
         
         <div class="mt-3">
           <button class="btn btn-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#historyCollapse">📜 View DT History</button>
@@ -161,25 +167,84 @@ const data = {
       const dt = parseInt(dtInput.value);
       const headSize = headSelect.value;
       const now = new Date().toLocaleString();
-      if (!owner || !racket || !string || isNaN(dt)) {
+      if (!owner || !racket || !string || isNaN(dt) || dtInput.value.includes(".") || !data[headSize] || !data[headSize][dt]) {
         alert("Please enter Owner, Racket, String and valid DT.");
         return;
       }
       const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
-      const key = `${owner}::${racket}`;
+      const key = `${owner}::${racket}::${string}`;
       if (!history[key]) history[key] = [];
       history[key].unshift({ dt, string, owner, headSize, time: now });
+  document.getElementById('ownerName').value = '';
+  document.getElementById('racketName').value = '';
+  document.getElementById('stringType').value = '';
+  document.getElementById('dtInput').value = '';
+  const msg = document.getElementById('saveMsg');
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 5000);
       localStorage.setItem('dtHistory', JSON.stringify(history));
       displayHistory();
+  cleanupMemoryCombos();
+populateMemoryDropdown();
+saveMemoryCombo(owner, racket, string);
     }
 
-    function deleteEntry(key, index) {
+    
+function cleanupMemoryCombos() {
+  const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
+  const remainingCombos = new Set();
+  for (const [key, entries] of Object.entries(history)) {
+    entries.forEach(entry => {
+      remainingCombos.add(`${entry.owner}::${key.split('::')[1]}::${entry.string}`);
+    });
+  }
+
+  let memory = JSON.parse(localStorage.getItem('memoryCombos') || '[]');
+  memory = memory.filter(({ owner, racket, string }) => 
+    remainingCombos.has(`${owner}::${racket}::${string}`)
+  );
+  localStorage.setItem('memoryCombos', JSON.stringify(memory));
+  populateMemoryDropdown();
+}
+
+
+
+
+function clearCombo(key) {
+  const [owner, racket, string] = key.split("::");
+  const currentOwner = document.getElementById('ownerName').value;
+  const currentRacket = document.getElementById('racketName').value;
+
+  if (currentOwner === owner && currentRacket === racket) {
+    document.getElementById('ownerName').value = '';
+    document.getElementById('racketName').value = '';
+    document.getElementById('stringType').value = '';
+    document.getElementById('dtInput').value = '';
+  const msg = document.getElementById('saveMsg');
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 5000);
+  }
+
+  const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
+  if (history[key]) {
+    delete history[key];
+    localStorage.setItem('dtHistory', JSON.stringify(history));
+    displayHistory();
+    cleanupMemoryCombos();
+  }
+}
+
+
+function deleteEntry(key, index) {
       const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
       if (history[key]) {
         history[key].splice(index, 1);
         if (history[key].length === 0) delete history[key];
         localStorage.setItem('dtHistory', JSON.stringify(history));
         displayHistory();
+  cleanupMemoryCombos();
+populateMemoryDropdown();
+saveMemoryCombo(owner, racket, string);
       }
     }
 
@@ -191,7 +256,7 @@ const data = {
         const [owner, racket] = key.split('::');
         if (filter && !owner.toLowerCase().includes(filter) && !racket.toLowerCase().includes(filter)) continue;
         const title = document.createElement('h6');
-        title.innerHTML = `🎾 <strong>${owner}</strong> – ${racket}`;
+        title.innerHTML = `🎾 <strong>${owner}</strong> – ${racket} – ${entries[0].string} <button class='btn btn-sm btn-outline-danger ms-2' onclick='clearCombo("${key}")'>🧹 Clear All</button>`;
         historyContent.appendChild(title);
         entries.forEach((entry, index) => {
           const div = document.createElement('div');
@@ -213,9 +278,68 @@ const data = {
     headSelect.addEventListener('change', updateOutput);
     dtInput.addEventListener('input', updateOutput);
     filterInput.addEventListener('input', displayHistory);
-    window.addEventListener('DOMContentLoaded', () => {
+    
+function populateMemoryDropdown() {
+  const select = document.getElementById('memorySelect');
+  select.innerHTML = '<option value="">Select saved combo</option>';
+  const memory = JSON.parse(localStorage.getItem('memoryCombos') || '[]');
+  memory.forEach(({ owner, racket, string }) => {
+    const option = document.createElement('option');
+    option.value = JSON.stringify({ owner, racket, string });
+    option.textContent = `${owner} – ${racket} – ${string}`;
+    select.appendChild(option);
+  });
+}
+
+document.getElementById('memorySelect').addEventListener('change', function() {
+  const value = this.value;
+  if (!value) return;
+  const { owner, racket, string } = JSON.parse(value);
+  document.getElementById('ownerName').value = owner;
+  document.getElementById('racketName').value = racket;
+  document.getElementById('stringType').value = string;
+});
+
+function saveMemoryCombo(owner, racket, string) {
+  let memory = JSON.parse(localStorage.getItem('memoryCombos') || '[]');
+  const exists = memory.some(m => m.owner === owner && m.racket === racket && m.string === string);
+  if (!exists) {
+    memory.unshift({ owner, racket, string });
+    localStorage.setItem('memoryCombos', JSON.stringify(memory));
+    populateMemoryDropdown();
+  }
+}
+
+
+
+function updateOutput() {
+  const headSize = headSelect.value;
+  const dt = parseInt(dtInput.value);
+  if (isNaN(dt) || dtInput.value.includes('.')) {
+    errorMsg.textContent = "Please enter a whole number.";
+    kgOutput.textContent = '-';
+    lbsOutput.textContent = '-';
+    return;
+  }
+  if (!data[headSize] || !data[headSize][dt]) {
+    errorMsg.textContent = "DT value out of range. Enter a whole number between 26 and 53.";
+    kgOutput.textContent = '-';
+    lbsOutput.textContent = '-';
+    return;
+  }
+  errorMsg.textContent = "";
+  const [kg, lbs] = data[headSize][dt];
+  kgOutput.textContent = kg;
+  lbsOutput.textContent = lbs;
+}
+
+
+window.addEventListener('DOMContentLoaded', () => {
       updateOutput();
       displayHistory();
+  cleanupMemoryCombos();
+populateMemoryDropdown();
+saveMemoryCombo(owner, racket, string);
 
       const toggle = document.getElementById('darkModeToggle');
       const prefersDark = localStorage.getItem('theme') === 'dark';
