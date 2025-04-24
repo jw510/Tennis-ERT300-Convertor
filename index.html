@@ -66,24 +66,24 @@
 
 <div class="mb-3">
   <label for="recordDate" class="form-label">📅 Record Date</label>
-  <input type="date" class="form-control" id="recordDate" required>
+  <input type="date" class="form-control" id="recordDate">
 </div>
 
         <label for="headSize">Racket Head Size (sq. in.):</label>
         <select id="headSize" class="form-select">
           <option value="83-94">83-94</option>
-          <option value="95-105">95-105</option>
+          <option value="95-105" selected>95-105</option>
           <option value="106-115">106-115</option>
         </select>
 
   <label for="dtInput">Enter DT Value:</label>
         <input type="number" id="dtInput" class="form-control" placeholder="Enter DT value (26-53)">
         <label for="ownerName">Owner Name:</label>
-        <input type="text" id="ownerName" class="form-control" placeholder="e.g. Alex, Jason">
+        <input type="text" id="ownerName" class="form-control" placeholder="e.g. Jack">
         <label for="racketName">Racket Name:</label>
-        <input type="text" id="racketName" class="form-control" placeholder="e.g. Blade 98">
+        <input type="text" id="racketName" class="form-control" placeholder="e.g. Tecnifibre Tflight 305S">
         <label for="stringType">String Type:</label>
-        <input type="text" id="stringType" class="form-control" placeholder="e.g. ALU Power">
+        <input type="text" id="stringType" class="form-control" placeholder="e.g. Restring Zero 1.23mm">
         <div id="errorMsg" class="text-danger mt-2"></div>
         <div class="output">
           <p><strong>Tension (lbs):</strong> <span id="lbsOutput">-</span></p>
@@ -144,28 +144,6 @@ const data = {
   }
 };
 
-
-    function updateOutput() {
-      const headSize = headSelect.value;
-      const dt = parseInt(dtInput.value);
-      if (isNaN(dt) || dtInput.value.includes('.')) {
-        errorMsg.textContent = "Please enter a whole number.";
-        kgOutput.textContent = '-';
-        lbsOutput.textContent = '-';
-        return;
-      }
-      if (!data[headSize][dt]) {
-        errorMsg.textContent = "DT value out of range. Enter a whole number between 26 and 53.";
-        kgOutput.textContent = '-';
-        lbsOutput.textContent = '-';
-        return;
-      }
-      errorMsg.textContent = "";
-      const [kg, lbs] = data[headSize][dt];
-      kgOutput.textContent = kg;
-      lbsOutput.textContent = lbs;
-    }
-
     function saveDT() {
       const owner = ownerInput.value.trim();
       const racket = racketInput.value.trim();
@@ -174,18 +152,13 @@ const data = {
       const headSize = headSelect.value;
       const recordDate = document.getElementById('recordDate').value;
       if (!owner || !racket || !string || isNaN(dt) || dtInput.value.includes(".") || !data[headSize] || !data[headSize][dt]) {
-        alert("Please enter valid value for Record Date, Owner, Racket, String and DT value.");
+        alert("Please check you have all valid value in all fields!");
         return;
       }
       const history = JSON.parse(localStorage.getItem('dtHistory') || '{}');
       const key = `${owner}::${racket}::${string}`;
       if (!history[key]) history[key] = [];
-      history[key].unshift({ dt, string, owner, headSize, 
-recordDate: (() => {
-  const [yyyy, mm, dd] = recordDate.split('-');
-  return `${dd}-${mm}-${yyyy}`;
-})()
- });
+      history[key].unshift({ dt, string, owner, headSize, recordDate: recordDate });
   document.getElementById('ownerName').value = '';
   document.getElementById('racketName').value = '';
   document.getElementById('stringType').value = '';
@@ -297,7 +270,7 @@ saveMemoryCombo(owner, racket, string);
     
 function populateMemoryDropdown() {
   const select = document.getElementById('memorySelect');
-  select.innerHTML = '<option value="">Select saved profile</option>';
+  select.innerHTML = '<option value="">Select Saved Profile</option>';
   const memory = JSON.parse(localStorage.getItem('memoryCombos') || '[]');
   memory.forEach(({ owner, racket, string }) => {
     const option = document.createElement('option');
@@ -326,12 +299,16 @@ function saveMemoryCombo(owner, racket, string) {
   }
 }
 
-
-
 function updateOutput() {
   const headSize = headSelect.value;
   const dt = parseInt(dtInput.value);
-  if (isNaN(dt) || dtInput.value.includes('.')) {
+  if (dtInput.value == "") {
+    errorMsg.textContent = "";
+    kgOutput.textContent = '-';
+    lbsOutput.textContent = '-';
+    return;
+  }
+  if (dtInput.value.includes('.')) {
     errorMsg.textContent = "Please enter a whole number.";
     kgOutput.textContent = '-';
     lbsOutput.textContent = '-';
@@ -350,14 +327,15 @@ function updateOutput() {
 }
 
 
-window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', () => {
       updateOutput();
       displayHistory();
-  cleanupMemoryCombos();
-populateMemoryDropdown();
-saveMemoryCombo(owner, racket, string);
+      cleanupMemoryCombos();
+      populateMemoryDropdown();
+      saveMemoryCombo(owner, racket, string);
+    });
 
-      const toggle = document.getElementById('darkModeToggle');
+    const toggle = document.getElementById('darkModeToggle');
       const prefersDark = localStorage.getItem('theme') === 'dark';
       if (prefersDark) {
         document.body.classList.add('bg-dark', 'text-light');
@@ -368,48 +346,7 @@ saveMemoryCombo(owner, racket, string);
         document.body.classList.toggle('text-light');
         localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
       });
-    });
   </script>
-
-
-
-
-
-
-
-
-
-
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  // Prefill record date in yyyy-mm-dd for <input type="date">
-  const recordInput = document.getElementById('recordDate');
-  if (recordInput && !recordInput.value) {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    recordInput.value = `${yyyy}-${mm}-${dd}`;
-  }
-
-  // Dark mode toggle
-  const toggle = document.getElementById('darkModeToggle');
-  const prefersDark = localStorage.getItem('theme') === 'dark';
-  if (prefersDark) {
-    document.body.classList.add('bg-dark', 'text-light');
-    toggle.checked = true;
-  }
-  toggle.addEventListener('change', () => {
-    if (toggle.checked) {
-      document.body.classList.add('bg-dark', 'text-light');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.body.classList.remove('bg-dark', 'text-light');
-      localStorage.setItem('theme', 'light');
-    }
-  });
-});
-</script>
 
 </body>
 </html>
